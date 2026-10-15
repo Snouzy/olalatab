@@ -6,11 +6,16 @@
 #   bench/run.sh                      # everything, 200 presses per case
 #   ITER=50 COUNTS="100" APPS="chrome" bench/run.sh
 #
+# Presses come 30 ms apart, which keeps everything warm. The "spaced" cases (SPACED window
+# counts, 50 presses 1.5 s apart) measure what a person gets.
+#
 # It takes over the keyboard and screen for a few minutes: don't type while it runs.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 ITER=${ITER:-200}
+SPACED=${SPACED:-"100"}
+SPACED_ITER=${SPACED_ITER:-50}
 COUNTS=${COUNTS:-"10 100 300"}
 APPS=${APPS:-"textedit chrome frozen"}
 APP=$HOME/Applications/Olalatab.app
@@ -66,6 +71,9 @@ for n in $COUNTS; do
         open -a TextEdit "$WORK/text-$n"/*.txt --args -ApplePersistenceIgnoreState YES -AppleWindowTabbingMode manual
         while ! pgrep -x TextEdit >/dev/null; do sleep 0.2; done
         bench "TextEdit-$n" "$(pgrep -x TextEdit)" "$n"
+        if [[ " $SPACED " == *" $n "* ]]; then
+            bench "TextEdit-$n-spaced" "$(pgrep -x TextEdit)" "$n" "$SPACED_ITER" --gap-ms 1500
+        fi
         pkill -x TextEdit; while pgrep -x TextEdit >/dev/null; do sleep 0.2; done
     fi
     if [[ " $APPS " == *" chrome "* ]]; then
@@ -78,6 +86,9 @@ for n in $COUNTS; do
             "$CHROME" --user-data-dir="$profile" --new-window about:blank >/dev/null 2>&1
         done
         bench "Chrome-$n" "$CHROME_PID" "$n"
+        if [[ " $SPACED " == *" $n "* ]]; then
+            bench "Chrome-$n-spaced" "$CHROME_PID" "$n" "$SPACED_ITER" --gap-ms 1500
+        fi
         kill "$CHROME_PID"; wait "$CHROME_PID" 2>/dev/null || true
         CHROME_PID=""
     fi

@@ -5,7 +5,8 @@ import OlalaCore
 
 let usage = """
 usage: olalatab [--config <path>] [--debug] [--print-default-config]
-       olalatab --bench [--iterations N] [--label L] [--target-pid P] [--expect-windows N] [--freeze-target] [--out file.json]
+       olalatab --bench [--iterations N] [--label L] [--target-pid P] [--expect-windows N] [--freeze-target]
+                [--gap-ms N] [--out file.json]
 
   --config <path>          Config file (default: ~/.config/olalatab/config.json)
   --debug                  Log every opening with its timings
@@ -42,6 +43,7 @@ while let arg = args.popFirst() {
     case "--target-pid": benchOptions = benchOptions ?? .init(); benchOptions!.targetPID = pid_t(value(for: arg))
     case "--expect-windows": benchOptions = benchOptions ?? .init(); benchOptions!.expectWindows = Int(value(for: arg)) ?? 2
     case "--freeze-target": benchOptions = benchOptions ?? .init(); benchOptions!.freezeTarget = true
+    case "--gap-ms": benchOptions = benchOptions ?? .init(); benchOptions!.gapMillis = Int(value(for: arg)) ?? 30
     case "--out": benchOptions = benchOptions ?? .init(); benchOptions!.out = URL(fileURLWithPath: value(for: arg))
     case "-h", "--help":
         print(usage)

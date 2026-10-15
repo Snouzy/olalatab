@@ -4,7 +4,7 @@ import OlalaCore
 
 /// Durations of one opening, in milliseconds.
 struct OpenTiming {
-    /// From the ⌥⇥ key event to the panel's frame handed to the WindowServer.
+    /// From the ⌥⇥ key event to the panel drawn, handed to the WindowServer and made visible.
     var fromKey: Double
     /// From the hot-key handler starting to the same point (excludes event delivery to olalatab).
     var fromHandler: Double

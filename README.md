@@ -1,8 +1,14 @@
+<img src=".github/assets/icon.svg" width="72" alt="">
+
 # olalatab
 
 ⌥ Option + Tab shows the windows of the app in front and switches to the one you pick. Like ⌘⇥, but for windows, and fast: measured below with up to 300 windows open.
 
-One small background app, one optional JSON file, no Dock icon, no network.
+One small background app, one optional JSON file, no Dock icon, no network. The code is free software under the MIT license.
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-141a2e)](LICENSE)
+[![macOS 13+](https://img.shields.io/badge/macOS-13%2B-2346d8)](#run-it)
+[![CI](https://github.com/Snouzy/olalatab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Snouzy/olalatab/actions/workflows/ci.yml)
 
 ## How it works
 
@@ -13,7 +19,7 @@ One small background app, one optional JSON file, no Dock icon, no network.
 
 - **At rest it does nothing.** ⌥⇥ is a Carbon global hot key: the WindowServer matches it, so olalatab sees no keyboard event while you type and never wakes up. The keyboard tap that follows Tab, ⇧Tab, Escape and the ⌥ release is enabled only while the panel is open, on its own thread, with an O(1) callback.
 - **The list is one WindowServer call.** `CGWindowListCopyWindowInfo` (current Space, on screen, so minimized windows are left out), filtered on the front app's PID. Titles come from the same call (Screen Recording permission), not from Accessibility, so a busy app can't slow the list down.
-- **The panel exists before you press.** A non-activating `NSPanel` is created and drawn once at launch, then hidden. Opening it redraws the visible rows (12 at most, with Core Text) and orders it in; the front app keeps focus while you choose.
+- **The panel exists before you press.** A non-activating `NSPanel` is created at launch and stays on screen, fully transparent and letting clicks through. Opening it redraws the visible rows (12 at most, with Core Text) and makes it opaque, so the system never has to rebuild its surfaces; the front app keeps focus while you choose. olalatab also opts out of App Nap, which otherwise throttles it after a few seconds idle.
 - **Switching talks to the WindowServer, not to the app.** `_SLPSSetFrontProcessWithOptions` + `SLPSPostEventRecordTo` bring the app forward with that window key, as yabai and AltTab do. `AXRaise` then puts the window above the app's other windows, from a background queue with a 50 ms timeout: a frozen app can't block olalatab.
 
 A quick ⌥⇥ (press and release) switches to the next window without showing the panel. With a single window the panel still shows it, so you can see the switcher answered.
@@ -58,6 +64,8 @@ Then, once: `make permissions` opens System Settings. Allow `Olalatab.app` in **
 In the panel: Tab / ↓ / → next, ⇧Tab / ↑ / ← previous, release ⌥ or Return to switch, Escape to cancel, or click a row.
 
 ## Performance
+
+> These figures were measured before three later fixes: the panel now stays on screen instead of being hidden, key releases always pass through the tap, and App Nap is off. With presses ~1.5 s apart, as a person types, openings that took 16 to 36 ms before the first fix now mostly stay under 16 ms. `make bench` now also runs spaced cases (`TextEdit-100-spaced`, `Chrome-100-spaced`) to measure exactly that.
 
 Measured on an M5 Max (macOS 26.6, 120 Hz display), 200 ⌥⇥ presses per case, posted as real keyboard events by `make bench`. Each press goes through the whole path: hot key, window list, panel, key tap, one more Tab, ⌥ release, switch. A frozen app (`SIGSTOP`) sits in the background during every case. Times in milliseconds.
 

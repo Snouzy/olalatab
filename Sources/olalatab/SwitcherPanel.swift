@@ -52,6 +52,7 @@ final class SwitcherPanel: NSPanel {
 
     /// Draws the new rows, hands them to the WindowServer, and only then makes the panel opaque,
     /// so the previous list never flashes.
+    ///
     /// Returns how long each step took, in milliseconds: layout, draw, flush, alpha.
     @discardableResult
     func show(_ titles: [String], icon: CGImage?, selected: Int, on screen: NSScreen) -> [Double] {
@@ -142,7 +143,6 @@ private final class WindowListView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        debugLog("mouse down at \(convert(event.locationInWindow, from: nil)), click count \(event.clickCount)")
         let y = convert(event.locationInWindow, from: nil).y - Self.inset
         guard y >= 0 else { return }
         let row = firstVisible + Int(y / Self.rowHeight)

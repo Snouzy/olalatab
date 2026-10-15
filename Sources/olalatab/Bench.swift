@@ -17,6 +17,9 @@ final class Bench {
         var out: URL?
         /// SIGSTOP the target once it is in front, SIGCONT at the end: ⌥⇥ on a hung app.
         var freezeTarget = false
+        /// Pause between two presses. Short keeps everything warm; a second or more is how a
+        /// person uses it, and lets the system idle the app between presses.
+        var gapMillis = 30
     }
 
     struct Report: Encodable {
@@ -83,7 +86,7 @@ final class Bench {
                 list.append(timing.list)
                 if let frontMillis { toFront.append(frontMillis) } else { failedSwitches += 1 }
             }
-            try? await Task.sleep(nanoseconds: 30_000_000)
+            try? await Task.sleep(nanoseconds: UInt64(options.gapMillis) * 1_000_000)
         }
         return Report(label: options.label, windows: windowCount, iterations: options.iterations,
                       failedOpens: failedOpens, failedSwitches: failedSwitches,
